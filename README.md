@@ -50,7 +50,7 @@ nctc collect --help
 ```
 source activate nctc
 
-nctc --project ./ref_db --species "Staphylococcus aureus" make --chromosomes
-nctc --project ./ref_db --species  "Staphylococcus aureus" analyse --v vfdb --r resfinder
-nctc --project ./ref_db --species  "Staphylococcus aureus" collect --cnv --csv --output ./summary
+nctc --project ./ref_db --species "Escherichia coli" make --chromosomes
+nctc --project ./ref_db --species  "Escherichia coli" analyse --v vfdb --r resfinder
+nctc --project ./ref_db --species  "Escherichia coli" collect --cnv --csv --output ./summary
 ```
