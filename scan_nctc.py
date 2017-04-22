@@ -36,7 +36,7 @@ Cluster with Snakemake (might take longer depending on queue on HPC)
 
 """
 
-from nctc.nctc import NCTC3000
+from nctc.core import NCTC3000
 from nctc.utils import CommandLine
 
 
