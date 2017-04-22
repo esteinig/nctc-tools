@@ -7,10 +7,9 @@ Pipeline facilitating access to complete bacterial reference assemblies from pub
 
 ### Data Usage
 
-Please refer to data usage guidelines from [NCTC3000](http://www.sanger.ac.uk/resources/downloads/bacteria/nctc/)
-
-
 >Permission of the principal investigator should be obtained before publishing analyses of the sequence/open reading frames/genes on a chromosome or genome scale. 
+
+Please refer to data usage guidelines from [NCTC3000](http://www.sanger.ac.uk/resources/downloads/bacteria/nctc/)
 
 ### Setup
 
@@ -49,8 +48,6 @@ nctc collect --help
 ### Quick Start
 
 ```
-# Establish species project for S. aureus
-
 source activate nctc
 
 nctc --project ./ref_db --species "Staphylococcus aureus" make --chromosomes
