@@ -53,7 +53,7 @@ def main():
         nctc.parse_website()
         nctc.parse_species(strict=args["chromosomes"], force=args["force"])
 
-    if args["subparser"] == "analyse":
+    if args["subparser"] == "type":
 
         nctc.load_project()
 

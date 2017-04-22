@@ -149,7 +149,7 @@ class NCTC3000:
 
             stamp("Storing table:", nctc_table.name)
 
-            nctc_table.store(self.project_config_path)
+            nctc_table.store(os.path.join(self.project_config_path, nctc_table))
 
     def parse_species(self, name="genomes", assembly="manual", strict=True, force=False):
 

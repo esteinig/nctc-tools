@@ -46,13 +46,12 @@ class CommandLine:
 
         make_parser.add_argument("--force", "-f", default=False, dest="force", action="store_true",
                                  help="force download of assemblies")
-
         make_parser.add_argument("--chromosomes", "-c",  default=False, dest="chromosomes",
-                                 action="store_true", help="only assemblies with identified chromosomes")
+                                 action="store_true", help="only manual assemblies with identified chromosomes")
 
         make_parser.set_defaults(subparser='make')
 
-        analysis_parser = subparsers.add_parser("analyse")
+        analysis_parser = subparsers.add_parser("type")
 
         analysis_parser.add_argument("--user_path", "-u", type=str, default=None, required=False,
                                     dest="output", help="user path with user_path/fasta")
@@ -75,7 +74,7 @@ class CommandLine:
         analysis_parser.add_argument("--force", "-f", default=False, dest="force", action="store_true",
                                      help="force analysis of assemblies")
 
-        analysis_parser.set_defaults(subparser='analyse')
+        analysis_parser.set_defaults(subparser='type')
 
         collect_parser = subparsers.add_parser("collect")
 
@@ -102,7 +101,9 @@ class CommandLine:
 
         collect_parser.set_defaults(subparser='collect')
 
-        update_parser = subparsers.add_parser("update")
+        pangenome_parser = subparsers.add_parser("pangenome")
+
+        pangenome_parser = subparsers.add_parser("pangenome")
 
         self.args = parser.parse_args()
 
