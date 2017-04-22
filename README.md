@@ -41,7 +41,7 @@ Print help message for global options and task options:
 nctc --help
 
 nctc make --help
-nctc analyse --help
+nctc type --help
 nctc collect --help
 ```
 
@@ -51,6 +51,6 @@ nctc collect --help
 source activate nctc
 
 nctc --project ./ref_db --species "Escherichia coli" make --chromosomes
-nctc --project ./ref_db --species "Escherichia coli" analyse --v vfdb --r resfinder
+nctc --project ./ref_db --species "Escherichia coli" type --v vfdb --r resfinder
 nctc --project ./ref_db --species "Escherichia coli" collect --cnv --csv --output ./summary
 ```
