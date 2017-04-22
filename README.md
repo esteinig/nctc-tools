@@ -6,12 +6,14 @@ Pipeline facilitating access to complete bacterial reference assemblies from pub
 * collect analysis summaries for local sequences or species from NCTC3000
 
 ### Data Usage
+---
 
 >Permission of the principal investigator should be obtained before publishing analyses of the sequence/open reading frames/genes on a chromosome or genome scale. 
 
 Please refer to data usage guidelines from [NCTC3000](http://www.sanger.ac.uk/resources/downloads/bacteria/nctc/)
 
 ### Setup
+---
 
 Dependencies:
 
@@ -46,6 +48,7 @@ nctc collect --help
 ```
 
 ### Quick Start
+---
 
 ```
 source activate nctc
