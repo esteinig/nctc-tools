@@ -138,10 +138,10 @@ class NCTCTable:
 
     def store(self, path):
 
-        filename = os.path.join(path, self.project + "_" + self.name + "_" + time.strftime("%d-%m-%Y-%H-%M"))
+        filename = os.path.join(path, self.name + "_" + time.strftime("%d-%m-%Y-%H-%M"))
 
-        filename_table = os.path.join(filename + "_data.tab")
-        filename_links = os.path.join(filename + "_links.tab")
+        filename_table = filename + "_data.tab"
+        filename_links = filename + "_links.tab"
 
         self.dataframe.to_csv(filename_table, sep="\t")
         self.links.to_csv(filename_links, sep="\t")

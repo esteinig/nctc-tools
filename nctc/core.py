@@ -95,7 +95,7 @@ class NCTC3000:
         table_history = dict()
 
         files = [file for file in os.listdir(self.project_config_path)
-                 if file.startswith(self.project) and file.endswith(".tab")]
+                 if file.endswith(".tab")]
 
         for file in files:
 
@@ -148,8 +148,8 @@ class NCTC3000:
             nctc_table.summarise()
 
             stamp("Storing table:", nctc_table.name)
-            print(self.project_config_path, nctc_table.name)
-            nctc_table.store(os.path.join(self.project_config_path, nctc_table.name))
+
+            nctc_table.store(self.project_config_path)
 
     def parse_species(self, name="genomes", assembly="manual", strict=True, force=False):
 
@@ -464,6 +464,8 @@ class NCTC3000:
     def _gff_to_fasta(self, gff_files):
 
         for file in gff_files:
+
+            stamp("Converting file", file)
 
             file_name, ext = os.path.splitext(file)
             base_name = os.path.basename(file_name)
