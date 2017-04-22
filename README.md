@@ -5,15 +5,13 @@ Pipeline facilitating access to complete bacterial reference assemblies from pub
 * analyse assemblies (local and database) with [mlst](https://github.com/tseemann/mlst) and [Abricate](https://github.com/tseemann/abricate)
 * collect analysis summaries for local sequences or species from NCTC3000
 
-### Data Usage
----
+## Data Usage
 
 >Permission of the principal investigator should be obtained before publishing analyses of the sequence/open reading frames/genes on a chromosome or genome scale. 
 
 Please refer to data usage guidelines from [NCTC3000](http://www.sanger.ac.uk/resources/downloads/bacteria/nctc/)
 
-### Setup
----
+## Setup
 
 Dependencies:
 
@@ -47,13 +45,12 @@ nctc analyse --help
 nctc collect --help
 ```
 
-### Quick Start
----
+## Quick Start
 
 ```
 source activate nctc
 
 nctc --project ./ref_db --species "Staphylococcus aureus" make --chromosomes
-nctc --project ./ref_db --species  "Staphylococcus aureus" analyse --v vfdb --r resfinder --minid
+nctc --project ./ref_db --species  "Staphylococcus aureus" analyse --v vfdb --r resfinder
 nctc --project ./ref_db --species  "Staphylococcus aureus" collect --cnv --csv --output ./summary
 ```
