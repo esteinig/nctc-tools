@@ -1,0 +1,82 @@
+# Analysis workflow for NCTC3000
+# Includes MLST and Abricate (AMR), later others like Roary
+
+configfile: "nctc.json"
+
+FASTA, = glob_wildcards("fasta/{sample}.fasta")
+
+rule all:
+    input:
+        "mlst/mlst.report",
+        expand("res/{sample}.tab", sample=FASTA),
+        "res/" + config["abricate_res_db"] + ".report",
+        expand("vf/{sample}.tab", sample=FASTA),
+        "vir/" + config["abricate_vir_db"] + ".report",
+
+rule mlst:
+    output:
+        "mlst/mlst.report"
+    params:
+        mlst_mincov=config["mlst_mincov"]
+        mlst_minid=config["mlst_minid"]
+    conda:
+        config["env"]
+    shell:
+        "mlst --mincov {params.mlst_mincov} --minid {params.mlst_minid} fasta/* > {output}"
+
+rule amr:
+    input:
+        "fasta/{sample}.fasta"
+    params:
+        db=config["abricate_res_db"],
+        minid=config["minid"],
+        abricate=config["abricate_path"]
+    output:
+        "res/{sample}.tab"
+    conda:
+        config["env"]
+    shell:
+        "{params.abricate} --db {params.db} --minid {params.minid} --nopath {input} > {output}"
+
+rule summarize_amr:
+    input:
+        expand("res/{sample}.tab", sample=FASTA)
+    params:
+        abricate=config["abricate_path"],
+        db=config["abricate_res_db"]
+    output:
+        "res/{params.db}.report"
+    conda:
+        config["env"]
+    shell:
+        "{params.abricate} --summary {input} > {output}"
+
+rule vf:
+    input:
+        "fasta/{sample}.fasta"
+    params:
+        db = config["abricate_vir_db"],
+        minid = config["minid"],
+        abricate = config["abricate_path"]
+    output:
+        "vir/{sample}.tab"
+    conda:
+        config["env"]
+    shell:
+        "{params.abricate} --db {params.db} --minid {params.minid} --nopath {input} > {output}"
+
+rule summarize_vf:
+    input:
+        expand("vir/{sample}.tab", sample=FASTA)
+    params:
+        abricate=config["abricate_path"],
+        db = config["abricate_vir_db"]
+    output:
+        "vir/{params.db}.report"
+    conda:
+        config["env"]
+    shell:
+        "{params.abricate} --summary {input} --csv > {output}"
+
+
+

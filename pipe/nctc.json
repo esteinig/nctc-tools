@@ -1,0 +1,16 @@
+{
+  "snek": {
+            "force": false,
+            "jobs": 300,
+            "latency": 300,
+            "conda": true,
+            "cluster": "qsub -l pmem=1gb -l walltime=2:00:00 -l nodes=1:ppn=1 -V -S /bin/bash"
+  },
+
+  "env": "/home/esteinig/nctc/envs/nctc.yaml",
+  "abricate_res_db": "resfinder",
+  "abricate_vir_db": "vfdb",
+  "minid": 80,
+  "abricate_path": "/home/esteinig/nctc/bin/abricate/bin/abricate",
+  "mlst_mincov": 80,
+}

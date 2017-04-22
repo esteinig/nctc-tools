@@ -1,0 +1,3 @@
+[submodule "bin/abricate"]
+	path = bin/abricate
+	url = https://github.com/tseemann/abricate
