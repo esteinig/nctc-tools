@@ -45,7 +45,6 @@ def main():
     cmd_line = CommandLine()
 
     args = vars(cmd_line.args)
-
     nctc = NCTC3000(project_path=args["project"], species=args["species"], force=args["overwrite"])
 
     if args["subparser"] == "make":

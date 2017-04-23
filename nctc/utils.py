@@ -53,8 +53,8 @@ class CommandLine:
 
         analysis_parser = subparsers.add_parser("type")
 
-        analysis_parser.add_argument("--user_path", "-u", type=str, default=None, required=False,
-                                    dest="output", help="user path with user_path/fasta")
+        analysis_parser.add_argument("--user_path", "-u", type=str, default="", required=False,
+                                     dest="user_path", help="user path with user_path/fasta")
         analysis_parser.add_argument("--cluster", default=False, dest="cluster", action="store_true",
                                      help="enable cluster execution")
         analysis_parser.add_argument("--resistance_db", "-r", type=str, default="resfinder", dest="resistance_db",

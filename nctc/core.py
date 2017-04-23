@@ -76,7 +76,7 @@ class NCTC3000:
         self.files = dict()
 
         self.project_config_path = os.path.join(self.project_path, ".config")
-
+        print("Init project config path", self.project_config_path)
         self.report_files = dict()
 
         # Initialisation Functions
@@ -94,11 +94,9 @@ class NCTC3000:
 
         table_history = dict()
 
-        files = [file for file in os.listdir(self.project_config_path)
-                 if file.endswith(".tab")]
+        files = [file for file in os.listdir(self.project_config_path) if file.endswith(".tab")]
 
         for file in files:
-
             components = file.replace(".tab", "").split("_")
 
             date = components[-2]
@@ -115,7 +113,7 @@ class NCTC3000:
                 table_history[date]["dataframe"] = os.path.join(self.project_config_path, file)
 
         try:
-            last = sorted(table_history.keys(), key=lambda x: time.strptime(date, "%d-%m-%Y-%H-%M"))[-1]
+            last = sorted(table_history.keys(), key=lambda x: time.strptime(date, "%d-%m-%Y-%H-%M"))[-2]
         except IndexError:
             raise ValueError("There is no history to load in", self.project_config_path)
 
@@ -402,7 +400,7 @@ class NCTC3000:
 
         """
 
-        if user_path is not None:
+        if user_path:
             analysis_path = user_path
             fasta_path = os.path.join(user_path, "fasta")
             stamp("Inititating local analysis paths at user path:", analysis_path)
