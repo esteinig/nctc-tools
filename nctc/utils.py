@@ -16,8 +16,10 @@ import argparse
 
 from numpy import nan
 
-from subprocess import check_output
+from subprocess import call
 from subprocess import CalledProcessError
+
+FASTA_EXT = (".fa", ".fasta")
 
 
 class CommandLine:
@@ -29,13 +31,16 @@ class CommandLine:
         parser.add_argument("--version", "-v", help="print version and exit")
 
         parser.add_argument("--project", "-p", type=str, required=False,
-                            default="NCTC3000", dest="project", help="project path")
+                            default=os.getcwd(), dest="project", help="project path")
 
-        parser.add_argument("--species", "-s", type=str, default="Staphylococcus aureus", required=False,
-                            dest="species", help="species name")
+        parser.add_argument("--species", "-s", type=str, required=False,
+                            default="Staphylococcus aureus", dest="species", help="species name")
 
         parser.add_argument("--force", "-f", default=False, dest="overwrite", action="store_true",
                             help="force overwrite of project")
+
+        parser.add_argument("--user_path", "-u", type=str, default="", required=False,
+                            dest="user_path", help="user path with fasta files at user_path/fasta")
 
         parser.add_argument("--verbose", "-d", default=False, dest="verbose", action="store_true",
                             help="print details")
@@ -53,8 +58,6 @@ class CommandLine:
 
         analysis_parser = subparsers.add_parser("type")
 
-        analysis_parser.add_argument("--user_path", "-u", type=str, default="", required=False,
-                                     dest="user_path", help="user path with user_path/fasta")
         analysis_parser.add_argument("--cluster", default=False, dest="cluster", action="store_true",
                                      help="enable cluster execution")
         analysis_parser.add_argument("--resistance_db", "-r", type=str, default="resfinder", dest="resistance_db",
@@ -80,8 +83,6 @@ class CommandLine:
 
         collect_parser.add_argument("--output", "-o", type=str, default="report.tab", required=True,
                                     dest="output", help="summary output file")
-        collect_parser.add_argument("--user_path", "-u", type=str, default=None, required=False,
-                                    dest="user_path", help="user path with user_path/fasta")
         collect_parser.add_argument("--merge", "-m", type=str, default="outer", required=False,
                                     dest="merge", help="merge on mlst and abricate reports")
         collect_parser.add_argument("--cnv", default=False, dest="cnv", action="store_true",
@@ -112,7 +113,7 @@ class NCTCTable:
 
     """ Class parsing a HTML Soup table into a Pandas dataframe """
 
-    def __init__(self, project, table=None, dataframe=pandas.DataFrame(), links=pandas.DataFrame(), name=None):
+    def __init__(self, name, table=None, dataframe=pandas.DataFrame(), links=pandas.DataFrame()):
 
         """
 
@@ -126,9 +127,8 @@ class NCTCTable:
 
         """
 
-        self.project = project
-        self.table = table
         self.name = name
+        self.table = table
 
         self.dataframe = dataframe
         self.links = links
@@ -281,7 +281,7 @@ class NCTCTable:
 
 def stamp(*args):
 
-    print(str(time.strftime("[%H:%M:%S]")) + "\t" + " ".join([str(arg) for arg in args]))
+    print(str(time.strftime("[%H:%M:%S]")) + " " + " ".join([str(arg) for arg in args]))
 
 
 class NCTCProgram:
@@ -309,84 +309,99 @@ class NCTCProgram:
         if not self.out_dir.endswith("/"):
             self.out_dir += "/"
 
-        if force:
-            shutil.rmtree(self.out_dir)
+        self.go = True
 
-        os.makedirs(out_dir, exist_ok=True)
+        if os.path.exists(out_dir):
+            stamp("Analysis exists at", self.out_dir)
+            if force:
+                stamp("Force activated, removing directory", self.out_dir)
+                shutil.rmtree(self.out_dir)
+            else:
+                self.go = False
+
+        if self.go:
+            stamp("Creating analysis directory", self.out_dir)
+            os.makedirs(out_dir)
 
 
 class MLST(NCTCProgram):
 
     def run(self, min_cov=80, min_id=90):
 
-        output = os.path.join(self.out_dir, "mlst.report")
+        if self.go:
+            output = os.path.join(self.out_dir, "mlst.report")
 
-        cmd = " ".join([self.exec_path, "--mincov", str(min_cov), "--minid", str(min_id),
-                        self.target_path + "*", ">", output])
+            cmd = " ".join([self.exec_path, "--mincov", str(min_cov), "--minid", str(min_id),
+                            self.target_path + "*", ">", output])
 
-        try:
-            check_output(cmd, shell=True)
-        except CalledProcessError:
-            shutil.rmtree(self.out_dir)
-            stamp("Could not run MLST. Removing directory", self.out_dir)
-        except KeyboardInterrupt:
-            stamp("Interrupted by user, removing analysis directory", self.out_dir)
-            shutil.rmtree(self.out_dir)
+            try:
+                stamp("Running mlst with database", "on", self.target_path)
+                call(cmd, shell=True, stdout=open(os.devnull, 'w'), stderr=open(os.devnull, 'w'))
+            except CalledProcessError:
+                shutil.rmtree(self.out_dir)
+                stamp("Could not run MLST. Removing directory", self.out_dir)
+            except KeyboardInterrupt:
+                stamp("Interrupted by user, removing analysis directory", self.out_dir)
+                shutil.rmtree(self.out_dir, ignore_errors=True)
 
-        return output
+            return output
 
 
 class Abricate(NCTCProgram):
 
-    def _get_file_paths(self, file):
+    def _get_file_paths(self, file, db):
 
         file_name, extension = os.path.splitext(file)
         file_path = os.path.join(self.target_path, file)
-        output = os.path.join(self.out_dir, file_name + ".tab")
+        output = os.path.join(self.out_dir, file_name + "_" + db + ".tab")
 
         return file_path, output
 
-    def run(self, db="resfinder", min_id=80, ext=".fasta"):
+    def run(self, db="resfinder", min_id=80):
 
-        files = [file for file in os.listdir(self.target_path) if file.endswith(ext)]
+        if self.go:
+            files = [file for file in os.listdir(self.target_path) if file.endswith(FASTA_EXT)]
 
-        fail = []
-        for file in files:
+            fail = []
+            for file in files:
 
-            file_path, output = self._get_file_paths(file)
+                file_path, output = self._get_file_paths(file, db)
 
-            cmd = " ".join([self.exec_path, "--db", db, "--minid", str(min_id), "--nopath", file_path, ">", output])
+                cmd = " ".join([self.exec_path, "--db", db, "--minid", str(min_id), "--nopath", file_path, ">", output])
 
-            try:
-                check_output(cmd, shell=True)
-            except CalledProcessError:
-                stamp("Could not run Abricate for file", file)
-                fail.append(file)
-                continue
-            except KeyboardInterrupt:
-                stamp("Interrupted by user, removing analysis directory", self.out_dir)
-                shutil.rmtree(self.out_dir)
-            finally:
-                if len(fail) == len(files):
-                    stamp("Failed to run all files in Abricate, removing directory", self.out_dir)
-                    shutil.rmtree(self.out_dir)
+                try:
+                    stamp("Running Abricate with database", db, "on", file)
+                    call(cmd, shell=True, stdout=open(os.devnull, 'w'), stderr=open(os.devnull, 'w'))
+                except CalledProcessError:
+                    stamp("Could not run Abricate for file", file)
+                    fail.append(file)
+                    continue
+                except KeyboardInterrupt:
+                    stamp("Interrupted by user, removing analysis directory", self.out_dir)
+                    shutil.rmtree(self.out_dir, ignore_errors=True)
+                finally:
+                    if len(fail) == len(files):
+                        stamp("Failed to run all files in Abricate, removing directory", self.out_dir)
+                        shutil.rmtree(self.out_dir, ignore_errors=True)
 
-        summary_file = self.summarize(db=db)
+            summary_file = self.summarize(db=db)
 
-        return summary_file
+            return summary_file
 
     def summarize(self, db):
 
-        summary = os.path.join(self.out_dir, db + ".report")
+        if self.go:
+            summary = os.path.join(self.out_dir, db + ".report")
 
-        cmd = " ".join([self.exec_path, "--summary", self.out_dir + "*.tab", ">", summary])
+            cmd = " ".join([self.exec_path, "--summary", self.out_dir + "*.tab", ">", summary])
 
-        try:
-            check_output(cmd, shell=True)
-        except CalledProcessError:
-            raise
+            try:
+                stamp("Writing results from database", db, "to", summary)
+                call(cmd, shell=True, stdout=open(os.devnull, 'w'), stderr=open(os.devnull, 'w'))
+            except CalledProcessError:
+                raise
 
-        return summary
+            return summary
 
 
 

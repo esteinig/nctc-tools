@@ -22,6 +22,7 @@ from nctc.utils import stamp, MLST, Abricate, NCTCTable
 # Disabled warning for now but need to fix.
 pandas.options.mode.chained_assignment = None
 
+FASTA_EXT = (".fa", ".fasta")
 
 class NCTC3000:
 
@@ -34,11 +35,12 @@ class NCTC3000:
 
     """
 
-    def __init__(self, project_path="NCTC3000", species="Staphylococcus aureus", force=False):
+    def __init__(self, project_path="NCTC3000", species="Staphylococcus aureus", force=False, user=False):
 
         self.project_path = os.path.abspath(project_path)
         self.project = os.path.basename(self.project_path)
 
+        self.user = user
         self.force = force
 
         self.date = time.strftime("%d-%m-%Y-%H-%M")
@@ -76,19 +78,20 @@ class NCTC3000:
         self.files = dict()
 
         self.project_config_path = os.path.join(self.project_path, ".config")
-        print("Init project config path", self.project_config_path)
+
         self.report_files = dict()
 
         # Initialisation Functions
 
-        if self.force:
-            print("Warning. Overwriting project", self.project_path, "in three seconds...")
-            for i in range(3):
-                time.sleep(1)
+        if not user:
+            if self.force:
+                print("Warning. Overwriting project", self.project_path, "in three seconds...")
+                for i in range(3):
+                    time.sleep(1)
 
-            shutil.rmtree(self.project_path)
+                shutil.rmtree(self.project_path)
 
-        self._setup_project()
+            self._setup_project()
 
     def load_project(self):
 
@@ -100,12 +103,11 @@ class NCTC3000:
             components = file.replace(".tab", "").split("_")
 
             date = components[-2]
-            project = components[0]
-            table_name = components[1]
+            table_name = components[0]
             table_type = components[-1]
 
             if date not in table_history.keys():
-                table_history[date] = {"project": project, "name": table_name, "created": date}
+                table_history[date] = {"name": table_name, "created": date}
 
             if table_type == "links":
                 table_history[date]["links"] = os.path.join(self.project_config_path, file)
@@ -113,16 +115,17 @@ class NCTC3000:
                 table_history[date]["dataframe"] = os.path.join(self.project_config_path, file)
 
         try:
-            last = sorted(table_history.keys(), key=lambda x: time.strptime(date, "%d-%m-%Y-%H-%M"))[-2]
+            last = sorted(table_history.keys(), key=lambda x: time.strptime(date, "%d-%m-%Y-%H-%M"))[-1]
         except IndexError:
             raise ValueError("There is no history to load in", self.project_config_path)
 
         last_table = table_history[last]
 
-        stamp("Loading last check point from project", last_table["project"], "created at", last_table["created"])
+        stamp("Loading last check point for table", last_table["name"],
+              "from project created at", last_table["created"])
 
-        self.tables[last_table["name"]] = NCTCTable(project=last_table["project"], name=last_table["name"],
-                                                    dataframe=last_table["dataframe"], links=last_table["links"])
+        self.tables[last_table["name"]] = NCTCTable(name=last_table["name"], dataframe=last_table["dataframe"],
+                                                    links=last_table["links"])
 
     def _setup_project(self):
 
@@ -196,9 +199,10 @@ class NCTC3000:
 
         os.makedirs(out_path)
 
-        self._get_analysis_paths(user_path)
+        _, _, mlst_path, res_path, vir_path = self._get_analysis_paths(user_path, resistance_db, virulence_db)
 
-        frames = self._parse_reports(resistance_db=resistance_db, virulence_db=virulence_db)
+        frames = self._parse_reports(mlst_path, res_path, vir_path,
+                                     resistance_db=resistance_db, virulence_db=virulence_db)
 
         cleaned_frames = self._clean_reports(frames)
         merged_frames = self._merge_frames(cleaned_frames, merge=merge)
@@ -230,15 +234,16 @@ class NCTC3000:
     def _merge_frames(frames, left=None, merge="outer"):
 
         merged = {}
-        for output in ("virulence", "resistance"):
-            if left is None:
-                merged_df = pandas.merge(left=frames["mlst"], right=frames[output], left_on="ID", right_on="ID",
-                                         how=merge)
-            else:
-                merged_df = pandas.merge(left=left, right=frames[output], left_on="ID", right_on="ID",
-                                         how=merge)
+        for output in frames.keys():
+            if "virulence" in output or "resistance" in output:
+                if left is None:
+                    merged_df = pandas.merge(left=frames["mlst"], right=frames[output], left_on="ID", right_on="ID",
+                                             how=merge)
+                else:
+                    merged_df = pandas.merge(left=left, right=frames[output], left_on="ID", right_on="ID",
+                                             how=merge)
 
-            merged[output] = merged_df
+                merged[output] = merged_df
 
         return merged
 
@@ -247,7 +252,7 @@ class NCTC3000:
         cnv_frames = {}
 
         for output, dataframe in frames.items():
-            if output in ("virulence", "resistance"):
+            if "virulence" in output or "resistance" in output:
                 cnv_frame = {}
                 for column in dataframe.columns:
                     if column not in ("ID", "Count"):
@@ -257,7 +262,7 @@ class NCTC3000:
 
                 cnv_frames[output + "_cnv"] = pandas.DataFrame(cnv_frame)
 
-        # Return dictionary without key "mlst", just copy numebr variation for Abricate
+        # Return dictionary without key "mlst", just copy number variation for Abricate
         return cnv_frames
 
     @staticmethod
@@ -287,7 +292,7 @@ class NCTC3000:
 
         for output, frame in frames.items():
             ids = frame.ix[:, 0]
-            cleaned = frame[ids.str.endswith(".fasta")]
+            cleaned = frame[ids.str.endswith(FASTA_EXT)]
             cleaned_ids = cleaned.iloc[:, 0].map(lambda x: self._extract_name(x))
             cleaned = self._clean_output_reports(output, cleaned)
             cleaned.insert(0, "ID", cleaned_ids)
@@ -298,7 +303,8 @@ class NCTC3000:
         return clean
 
     def _clean_output_reports(self, output, dataframe):
-        if output in ("virulence", "resistance"):
+
+        if "virulence" in output or "resistance" in output:
             keep = ~dataframe.columns.str.contains("|".join(['Unnamed:', '#FILE']))
             cleaned = dataframe.iloc[:, keep]
             cleaned.rename(columns={'NUM_FOUND': 'Count'}, inplace=True)
@@ -334,7 +340,7 @@ class NCTC3000:
 
         return name
 
-    def analyse(self, user_path=None, resistance_db="resfinder", virulence_db="vfdb", minid=90, mincov=95,
+    def analyse(self, user_path="", resistance_db="resfinder", virulence_db="vfdb", minid=90, mincov=95,
                 cluster=True, mlst=True, resistance=True, virulence=True, force=False, verbose=True):
 
         """
@@ -353,11 +359,16 @@ class NCTC3000:
         if verbose:
             self._print_parameters(locals())
 
-        analysis_path, fasta_path = self._get_analysis_paths(user_path)
+        analysis_path, fasta_path, mlst_path, res_path, vir_path = self._get_analysis_paths(user_path, resistance_db,
+                                                                                            virulence_db)
 
-        stamp("Analysing data for", self.species)
+        if force:
+            stamp("May the force be with you.")
+
+        stamp("Running analyses for", fasta_path, "in", analysis_path)
 
         if cluster:
+
             self._modify_config(virulence_db, resistance_db, minid, mincov, force)
 
             snek = Snek(path=analysis_path, snake_file=self.snake_file,
@@ -368,27 +379,19 @@ class NCTC3000:
         else:
 
             if mlst:
-                mlst = MLST(target_path=fasta_path, out_dir=self.mlst_path, exec_path="mlst",
-                            force=force)
+                mlst = MLST(target_path=fasta_path, out_dir=mlst_path, exec_path="mlst", force=force)
+
                 mlst.run(min_id=minid, min_cov=mincov)
-            else:
-                stamp("MLST results exist at", self.mlst_path)
 
             if resistance:
-                res = Abricate(target_path=fasta_path, out_dir=self.res_path, exec_path=self.abricate,
-                               force=force)
-                res.run(db=resistance_db, min_id=minid, ext=".fasta")
-            else:
-                stamp("Resfinder results exist at", self.res_path)
+                res = Abricate(target_path=fasta_path, out_dir=res_path, exec_path=self.abricate, force=force)
+                res.run(db=resistance_db, min_id=minid)
 
             if virulence:
-                vir = Abricate(target_path=fasta_path, out_dir=self.vir_path, exec_path=self.abricate,
-                               force=force)
-                vir.run(db=virulence_db, min_id=minid, ext=".fasta")
-            else:
-                stamp("Virulence results exist at", self.vir_path)
+                vir = Abricate(target_path=fasta_path, out_dir=vir_path, exec_path=self.abricate, force=force)
+                vir.run(db=virulence_db, min_id=minid)
 
-    def _get_analysis_paths(self, user_path):
+    def _get_analysis_paths(self, user_path, res_db, vir_db):
 
         """
 
@@ -401,8 +404,14 @@ class NCTC3000:
         """
 
         if user_path:
-            analysis_path = user_path
+            analysis_path = os.path.abspath(user_path)
             fasta_path = os.path.join(user_path, "fasta")
+
+            if not os.path.exists(fasta_path):
+                raise IOError("Fasta path", fasta_path, "does not exist.")
+            if len(os.listdir(fasta_path)) == 0:
+                raise IOError("No fasta (.fasta, .fa) files detected at", fasta_path)
+
             stamp("Inititating local analysis paths at user path:", analysis_path)
         else:
             analysis_path = self.species_path
@@ -411,23 +420,24 @@ class NCTC3000:
 
         # Generate paths to analysis results, make available for parsing report functions:
 
-        self.mlst_path = os.path.join(analysis_path, "mlst")
-        self.res_path = os.path.join(analysis_path, "res")
-        self.vir_path = os.path.join(analysis_path, "vir")
+        mlst_path = os.path.join(analysis_path, "mlst")
+        res_path = os.path.join(analysis_path, "res", res_db)
+        vir_path = os.path.join(analysis_path, "vir", vir_db)
 
         # Return user or species analysis and fasta paths
 
-        return analysis_path, fasta_path
+        return analysis_path, fasta_path, mlst_path, res_path, vir_path
 
-    def _parse_reports(self, resistance_db="resfinder", virulence_db="vfdb"):
+    @staticmethod
+    def _parse_reports(mlst_path, res_path, vir_path, resistance_db="resfinder", virulence_db="vfdb"):
 
-        files = {"mlst": os.path.join(self.mlst_path, "mlst.report"),
-                 "resistance": os.path.join(self.res_path, resistance_db + ".report"),
-                 "virulence": os.path.join(self.vir_path, virulence_db + ".report")}
+        files = {"mlst": os.path.join(mlst_path, "mlst.report"),
+                 "resistance_" + resistance_db: os.path.join(res_path, resistance_db + ".report"),
+                 "virulence_" + virulence_db: os.path.join(vir_path, virulence_db + ".report")}
 
         frames = {"mlst": nan,
-                  "resistance": nan,
-                  "virulence": nan}
+                  "resistance_" + resistance_db: nan,
+                  "virulence_" + virulence_db: nan}
 
         for output, file in files.items():
             if os.path.exists(file):

@@ -2,7 +2,7 @@
 
 """
 
-scanNCTC
+scan_nctc.py
 
 Establishes NCTC3000 library by parsing the NCTC3000 website, updating a local data structure, downloading
 assemblies, performing genotyping, resistance / virulence factor detection and pangenome analysis on the
@@ -45,7 +45,8 @@ def main():
     cmd_line = CommandLine()
 
     args = vars(cmd_line.args)
-    nctc = NCTC3000(project_path=args["project"], species=args["species"], force=args["overwrite"])
+    nctc = NCTC3000(project_path=args["project"], species=args["species"], force=args["overwrite"],
+                    user=args["user_path"])
 
     if args["subparser"] == "make":
 
@@ -54,7 +55,8 @@ def main():
 
     if args["subparser"] == "type":
 
-        nctc.load_project()
+        if not args["user_path"]:
+            nctc.load_project()
 
         nctc.analyse(user_path=args["user_path"], cluster=args["cluster"], mlst=args["mlst"],
                      resistance=args["resistance"], resistance_db=args["resistance_db"], virulence=args["virulence"],
@@ -63,7 +65,8 @@ def main():
 
     if args["subparser"] == "collect":
 
-        nctc.load_project()
+        if not args["user_path"]:
+            nctc.load_project()
 
         nctc.summarise(out_path=args["output"], user_path=args["user_path"], merge=args["merge"], cnv=args["cnv"],
                        cnv_mincov=args["cnv_mincov"], force=args["force"], resistance_db=args["resistance_db"],
