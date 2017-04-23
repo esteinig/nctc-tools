@@ -32,12 +32,9 @@ Run:
 
 % nctc_tools.py --project ./nctc_db --species "Staphylococcus aureus" type --cluster
 
-% # ocal type and collect where files at user_path/*.fasta:
+% # local type and collect where files at user_path/*.fasta:
 
 % nctc_tools.py --user_path ./mrsa type --minid 90 --resistance_db resfinder
-
-
-
 
 """
 
