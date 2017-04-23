@@ -2,7 +2,7 @@
 
 """
 
-scan_nctc.py
+nctc_tools.py
 
 Establishes NCTC3000 library by parsing the NCTC3000 website, updating a local data structure, downloading
 assemblies, performing genotyping, resistance / virulence factor detection and pangenome analysis on the
@@ -14,24 +14,29 @@ http://www.sanger.ac.uk/resources/downloads/bacteria/nctc/
 
 Install:
 
-% git clone https://gitbub.com/esteinig/scanNCTC
-% git clone https://github.com/tseemann/abricate ./scanNCTC/bin/
+% git clone --recursive https://github.com/esteinig/nctc_tools
 
-% conda env create -f ./scanNCTC/envs/nctc.yaml
+% conda env create -f ./nctc_tools/envs/nctc.yaml
 
 Run:
 
 % source activate nctc
 
-% nctc make --project ./nctc_db --species staphylococcus_aureus --db nctc
-% nctc analysis --species staphylococcus_aureus --min_id 90 --db resfinder,vfdb
+% nctc_tools.py --project ./nctc_db --species "Staphylococcus aureus" make --chromosomes
+% nctc_tools.py --project ./nctc_db --species "Staphylococcus aureus" type --minid 90
+% nctc_tools.py --project ./nctc_db --species "Staphylococcus aureus" collect -o reports --cnv
 
-% nctc summary --species staphylococcus_aureus --report ./saureus_report.tab
-% nctc update --project ./nctc_db --species staphylococcus_aureus
+% nctc_tools.py --project ./nctc_db --species "Staphylococcus aureus" update
 
-Cluster with Snakemake (might take longer depending on queue on HPC)
+% # Cluster with Snakemake (might take longer than local runs depending on queue)
 
-% nctc analyse --species staphylococcus_aureus --cluster --background
+% nctc_tools.py --project ./nctc_db --species "Staphylococcus aureus" type --cluster
+
+% # ocal type and collect where files at user_path/*.fasta:
+
+% nctc_tools.py --user_path ./mrsa type --minid 90 --resistance_db resfinder
+
+
 
 
 """
