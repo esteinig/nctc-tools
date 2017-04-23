@@ -7,9 +7,13 @@ Pipeline facilitating access to complete bacterial reference assemblies from pub
 
 ## Data Usage
 
-Please refer to data usage guidelines from [NCTC3000](http://www.sanger.ac.uk/resources/downloads/bacteria/nctc/)
+Please refer to data usage guidelines from [NCTC3000](http://www.sanger.ac.uk/resources/downloads/bacteria/nctc/):
 
->Permission of the principal investigator should be obtained before publishing analyses of the sequence/open reading frames/genes on a chromosome or genome scale. 
+>This sequencing centre plans on publishing the completed and annotated sequences in a peer-reviewed journal as soon as possible. Permission of the principal investigator should be obtained before publishing analyses of the sequence/open reading frames/genes on a chromosome or genome scale. See our data sharing policy.
+
+Assemblies can be updated by users with task 'update':
+
+>**Please note**: these are pre-submission assemblies that should not be treated as final versions. Assemblies contain both chromosomal and plasmid contigs.
 
 ## Setup
 
@@ -54,3 +58,13 @@ nctc --project ./ref_db --species "Escherichia coli" make --chromosomes
 nctc --project ./ref_db --species "Escherichia coli" type --v vfdb --r resfinder
 nctc --project ./ref_db --species "Escherichia coli" collect --cnv --csv --output ./summary
 ```
+
+## Tasks
+
+`make`
+
+`type`
+
+`collect`
+
+`update`
