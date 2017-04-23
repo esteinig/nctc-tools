@@ -11,7 +11,7 @@ Please refer to data usage guidelines from [NCTC3000](http://www.sanger.ac.uk/re
 
 >This sequencing centre plans on publishing the completed and annotated sequences in a peer-reviewed journal as soon as possible. Permission of the principal investigator should be obtained before publishing analyses of the sequence/open reading frames/genes on a chromosome or genome scale. See our data sharing policy.
 
-Assemblies can be updated by users with task 'update':
+Assemblies can be updated by users with task `update`:
 
 >**Please note**: these are pre-submission assemblies that should not be treated as final versions. Assemblies contain both chromosomal and plasmid contigs.
 
@@ -61,10 +61,16 @@ nctc --project ./ref_db --species "Escherichia coli" collect --cnv --csv --outpu
 
 ## Tasks
 
-`make`
+[`make`](): create species repository on which to operate
 
-`type`
+[`type`](): perform general typing methods for resistance, virulence, mlst
 
-`collect`
+[`collect`](): summarise typing outputs
 
-`update`
+[`update`](): update species repository and summarise updates
+
+## 
+
+## Contact
+
+eikejoachim.steinig@my.jcu.edu.au
