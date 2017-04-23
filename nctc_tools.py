@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 """
 
 nctc_tools.py
