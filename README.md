@@ -1,4 +1,4 @@
-# nctc
+# nctc_tools
 
 Pipeline facilitating access to complete bacterial reference assemblies from public repositories:
 * maintain complete and curated reference genomes (PacBio) from [NCTC3000](http://www.sanger.ac.uk/resources/downloads/bacteria/nctc/)
@@ -21,7 +21,7 @@ Dependencies:
 
 * [Anaconda](https://www.continuum.io/DOWNLOADS) for Python 3
 
-Clone this repository recursively to include latest version of Abricate:
+Clone this repository recursively to include latest version of [Abricate]((https://github.com/tseemann/abricate):
 
 ```
 git clone --recursive https://github.com/esteinig/nctc
@@ -42,11 +42,11 @@ source activate nctc
 Print help message for global options and task options:
 
 ```
-nctc --help
+nctc_tools.py --help
 
-nctc make --help
-nctc type --help
-nctc collect --help
+nctc_tools.py make --help
+nctc_tools.py type --help
+nctc_tools.py collect --help
 ```
 
 ## Quick Start
