@@ -1,7 +1,7 @@
 # nctc
 
 Pipeline facilitating access to complete bacterial reference assemblies from public repositories:
-* maintain complete reference genomes (PacBio) from [NCTC3000](http://www.sanger.ac.uk/resources/downloads/bacteria/nctc/)
+* maintain complete and curated reference genomes (PacBio) from [NCTC3000](http://www.sanger.ac.uk/resources/downloads/bacteria/nctc/)
 * type assemblies (local and database) with [mlst](https://github.com/tseemann/mlst) and [Abricate](https://github.com/tseemann/abricate)
 * collect analysis summaries for local sequences or species from NCTC3000
 
