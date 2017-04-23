@@ -23,7 +23,7 @@ Dependencies:
 
 Clone this repository recursively to include latest version of Abricate:
 
-```bash
+```
 git clone --recursive https://github.com/esteinig/nctc
 ```
 
@@ -54,9 +54,15 @@ nctc collect --help
 ```
 source activate nctc
 
-nctc --project ./ref_db --species "Escherichia coli" make --chromosomes
-nctc --project ./ref_db --species "Escherichia coli" type --v vfdb --r resfinder
-nctc --project ./ref_db --species "Escherichia coli" collect --cnv --csv --output ./summary
+nctc_tools.py --project ./ref_db --species "Escherichia coli" make --chromosomes
+nctc_tools.py --project ./ref_db --species "Escherichia coli" type --v vfdb --r resfinder
+nctc_tools.py --project ./ref_db --species "Escherichia coli" collect --cnv --csv --output ./reports
+
+# snakemake at nctc_tools/pipes
+nctc_tools.py --project ./nctc_db --species "Escherichia coli" type --cluster
+
+# files at user_path/*.fasta
+nctc_tools.py --user_path ./mrsa type --minid 90 --resistance_db resfinder
 ```
 
 ## Tasks
@@ -68,8 +74,6 @@ nctc --project ./ref_db --species "Escherichia coli" collect --cnv --csv --outpu
 [`collect`](): summarise typing outputs
 
 [`update`](): update species repository and summarise updates
-
-## 
 
 ## Contact
 
