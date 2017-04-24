@@ -1,4 +1,4 @@
-name: nctc
+name: nctc-tools
 channels:
 - bioconda
 - defaults
@@ -17,6 +17,7 @@ dependencies:
 - perl-sub-exporter-progressive=0.001011=1
 - perl-threaded=5.22.0=10
 - perl-yaml=1.18=0
+- beautifulsoup4=4.5.3=py35_0
 - biopython=1.68=np112py35_0
 - boost=1.61.0=py35_0
 - icu=54.1=0
@@ -24,10 +25,14 @@ dependencies:
 - mkl=2017.0.1=0
 - numpy=1.12.1=py35_0
 - openssl=1.0.2k=1
+- pandas=0.19.2=np112py35_1
 - pip=9.0.1=py35_1
 - python=3.5.3=1
+- python-dateutil=2.6.0=py35_0
+- pytz=2017.2=py35_0
 - readline=6.2=2
 - setuptools=27.2.0=py35_0
+- six=1.10.0=py35_0
 - sqlite=3.13.0=0
 - tk=8.5.18=0
 - wheel=0.29.0=py35_0
@@ -35,10 +40,8 @@ dependencies:
 - zlib=1.2.8=3
 - pip:
   - bcbio-gff==0.6.4
-  - gff3==0.3.0
+  - lxml==3.7.3
   - requests==2.13.0
-  - six==1.10.0
   - snakemake==3.11.2
   - wrapt==1.10.10
-prefix: /home/esteinig/anaconda3/envs/nctc
-
+prefix: /home/esteinig/anaconda3/envs/nctc-tools

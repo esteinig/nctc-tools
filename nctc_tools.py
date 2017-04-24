@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 """
 
 nctc_tools.py
@@ -46,32 +47,29 @@ def main():
     cmd_line = CommandLine()
 
     args = vars(cmd_line.args)
-    nctc = NCTC3000(project_path=args["project"], species=args["species"], force=args["overwrite"],
-                    user=args["user_path"])
+
+    if args["version"]:
+        print("0.0.1")
+        exit(0)
+
+    nctc = NCTC3000(path=args["path"], species=args["species"], verbose=args["verbose"])
 
     if args["subparser"] == "make":
 
-        nctc.parse_website()
-        nctc.parse_species(strict=args["chromosomes"], force=args["force"])
+        nctc.make(strict=args["chromosomes"], force=args["force"])
 
     if args["subparser"] == "type":
 
-        if not args["user_path"]:
-            nctc.load_project()
-
-        nctc.analyse(user_path=args["user_path"], cluster=args["cluster"], mlst=args["mlst"],
-                     resistance=args["resistance"], resistance_db=args["resistance_db"], virulence=args["virulence"],
-                     virulence_db=args["virulence_db"], minid=args["minid"], mincov=args["mincov"],
-                     force=args["force"])
+        nctc.type(cluster=args["cluster"], mlst=args["mlst"],
+                  resistance=args["resistance"], resistance_db=args["resistance_db"], virulence=args["virulence"],
+                  virulence_db=args["virulence_db"], minid=args["minid"], mincov=args["mincov"],
+                  force=args["force"])
 
     if args["subparser"] == "collect":
 
-        if not args["user_path"]:
-            nctc.load_project()
-
-        nctc.summarise(out_path=args["output"], user_path=args["user_path"], merge=args["merge"], cnv=args["cnv"],
-                       cnv_mincov=args["cnv_mincov"], force=args["force"], resistance_db=args["resistance_db"],
-                       virulence_db=args["virulence_db"], csv=args["csv"])
+        nctc.collect(out_path=args["output"], merge=args["merge"], cnv=args["cnv"], cnv_mincov=args["cnv_mincov"],
+                     resistance_db=args["resistance_db"], virulence_db=args["virulence_db"], csv=args["csv"],
+                     force=args["force"], single=args["single"])
 
     if args["subparser"] == "update":
 

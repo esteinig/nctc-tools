@@ -14,12 +14,12 @@ import shutil
 import textwrap
 import argparse
 
-from numpy import nan
+from numpy import nan, int64
 
 from subprocess import call
 from subprocess import CalledProcessError
 
-FASTA_EXT = (".fa", ".fasta")
+FASTA_EXTENSIONS = (".fa", ".fasta")
 
 
 class CommandLine:
@@ -28,26 +28,21 @@ class CommandLine:
 
         parser = argparse.ArgumentParser()
 
-        parser.add_argument("--version", "-v", help="print version and exit")
+        parser.add_argument("--version", "-v", default=False, action="store_true",
+                            help="print version and exit")
 
-        parser.add_argument("--project", "-p", type=str, required=False,
-                            default=os.getcwd(), dest="project", help="project path")
+        parser.add_argument("--path", "-p", type=str, required=False,
+                            default=os.getcwd(), dest="path", help="path to project or fasta directory")
 
         parser.add_argument("--species", "-s", type=str, required=False,
                             default="Staphylococcus aureus", dest="species", help="species name")
-
-        parser.add_argument("--force", "-f", default=False, dest="overwrite", action="store_true",
-                            help="force overwrite of project")
-
-        parser.add_argument("--user_path", "-u", type=str, default="", required=False,
-                            dest="user_path", help="user path with fasta files at user_path/fasta")
 
         parser.add_argument("--verbose", "-d", default=False, dest="verbose", action="store_true",
                             help="print details")
 
         subparsers = parser.add_subparsers(help='Command-line interface for scanNCTC')
 
-        make_parser = subparsers.add_parser("make")
+        make_parser = subparsers.add_parser("make", help="create local repository of NCTC3000")
 
         make_parser.add_argument("--force", "-f", default=False, dest="force", action="store_true",
                                  help="force download of assemblies")
@@ -56,7 +51,7 @@ class CommandLine:
 
         make_parser.set_defaults(subparser='make')
 
-        analysis_parser = subparsers.add_parser("type")
+        analysis_parser = subparsers.add_parser("type", help="type assemblies")
 
         analysis_parser.add_argument("--cluster", default=False, dest="cluster", action="store_true",
                                      help="enable cluster execution")
@@ -79,7 +74,7 @@ class CommandLine:
 
         analysis_parser.set_defaults(subparser='type')
 
-        collect_parser = subparsers.add_parser("collect")
+        collect_parser = subparsers.add_parser("collect", help="collect results from analyses")
 
         collect_parser.add_argument("--output", "-o", type=str, default="report.tab", required=True,
                                     dest="output", help="summary output file")
@@ -279,11 +274,6 @@ class NCTCTable:
         return link_dict
 
 
-def stamp(*args):
-
-    print(str(time.strftime("[%H:%M:%S]")) + " " + " ".join([str(arg) for arg in args]))
-
-
 class NCTCProgram:
 
     """
@@ -360,7 +350,7 @@ class Abricate(NCTCProgram):
     def run(self, db="resfinder", min_id=80):
 
         if self.go:
-            files = [file for file in os.listdir(self.target_path) if file.endswith(FASTA_EXT)]
+            files = [file for file in os.listdir(self.target_path) if file.endswith(FASTA_EXTENSIONS)]
 
             fail = []
             for file in files:
@@ -404,4 +394,237 @@ class Abricate(NCTCProgram):
             return summary
 
 
+def stamp(*args):
 
+    print(str(time.strftime("[%H:%M:%S]")) + " " + " ".join([str(arg) for arg in args]))
+
+
+def get_copy_numbers(frames, cnv_mincov):
+    cnv_frames = {}
+
+    for output, dataframe in frames.items():
+        if "virulence" in output or "resistance" in output:
+            cnv_frame = {}
+            for column in dataframe.columns:
+                if column not in ("ID", "Count"):
+                    cnv_frame[column] = _get_cnv_column(output, dataframe, column, cnv_mincov)
+                else:
+                    cnv_frame[column] = dataframe[column]
+
+            cnv_frames[output + "_cnv"] = pandas.DataFrame(cnv_frame)
+
+    # Return dictionary without key "mlst", just copy number variation for Abricate
+    return cnv_frames
+
+
+def _get_cnv_column(output, dataframe, column, cnv_mincov):
+    cnv_column = []
+    for entry in dataframe[column].str.split(";"):
+        if len(entry) == 1 and entry[0] == ".":
+            cnv_column.append(nan)
+        else:
+            cov_filtered = []
+            for e in entry:
+                try:
+                    e = float(e)
+                    if e >= cnv_mincov:
+                        cov_filtered.append(e)
+                except ValueError:
+                    print("Could not convert coverage in dataframe for", output, "to float.")
+
+            cnv_column.append(len(cov_filtered))
+
+    return cnv_column
+
+
+def clean_reports(frames):
+
+    clean = {}
+
+    for output, frame in frames.items():
+        ids = frame.ix[:, 0]
+        cleaned = frame[ids.str.endswith(FASTA_EXTENSIONS)]
+        cleaned_ids = cleaned.iloc[:, 0].map(lambda x: _extract_file_name(x))
+        cleaned = _clean_output_reports(output, cleaned)
+        cleaned.insert(0, "ID", cleaned_ids)
+        cleaned.reindex()
+
+        clean[output] = cleaned
+
+    return clean
+
+
+def _clean_output_reports(output, dataframe):
+
+    if "virulence" in output or "resistance" in output:
+        keep = ~dataframe.columns.str.contains("|".join(['Unnamed:', '#FILE']))
+        cleaned = dataframe.iloc[:, keep]
+        cleaned.rename(columns={'NUM_FOUND': 'Count'}, inplace=True)
+
+    elif output == "mlst":
+        cleaned = dataframe.iloc[:, 1:]
+        cleaned.rename(columns={1: 'Species', 2: 'MLST'}, inplace=True)
+        cleaned.rename(columns=_get_mlst_header(cleaned), inplace=True)
+    else:
+        cleaned = None
+
+    return cleaned
+
+
+def _get_mlst_header(df):
+    allele_cols = {}
+    i = 1
+    for col in df.columns:
+        if type(col) is not int64:
+            allele_cols[col] = col
+        else:
+            allele_cols[col] = "MLST_Allele_" + str(i)
+            i += 1
+
+    return allele_cols
+
+
+def _extract_file_name(entry):
+    file_name = os.path.basename(entry)
+    name, extension = os.path.splitext(file_name)
+
+    return name
+
+
+def merge_frames(frames, left=None, merge="outer"):
+
+    merged = {}
+
+    for output in frames.keys():
+        if "virulence" in output or "resistance" in output:
+            if left is None:
+                merged_df = pandas.merge(left=frames["mlst"], right=frames[output], left_on="ID", right_on="ID",
+                                         how=merge)
+            else:
+                merged_df = pandas.merge(left=left, right=frames[output], left_on="ID", right_on="ID",
+                                         how=merge)
+
+            merged[output] = merged_df
+
+    return merged
+
+
+def parse_reports(mlst_path, res_path, vir_path, resistance_db="resfinder", virulence_db="vfdb"):
+
+    files = {"mlst": os.path.join(mlst_path, "mlst.report"),
+             "resistance_" + resistance_db: os.path.join(res_path, resistance_db + ".report"),
+             "virulence_" + virulence_db: os.path.join(vir_path, virulence_db + ".report")}
+
+    frames = {}
+
+    for output, file in files.items():
+        if os.path.exists(file):
+            stamp("Found output file", file)
+            if output == "mlst":
+                frames[output] = pandas.read_csv(file, sep="\t", header=None)
+            else:
+                frames[output] = pandas.read_csv(file, sep="\t")
+        else:
+            stamp("Could not find output file, skipping", file)
+
+    return frames
+
+
+def download_assemblies(gff_path, links, force=False):
+    exist = 0
+    downloaded = 0
+    out_paths = []
+
+    for entry in links.itertuples():
+        file, url = entry.File, entry.Link
+
+        out_path = os.path.join(gff_path, file)
+
+        if os.path.exists(out_path) and not force:
+            exist += 1
+        else:
+            stamp("Downloading", file, "from", url)
+            try:
+                urllib.request.urlretrieve(url, out_path)
+            except KeyboardInterrupt:
+                stamp("Interrupted by user, deleting last file at", out_path)
+                if ospath.exist(out_path):
+                    os.remove(out_path)
+
+            out_paths.append(out_path)
+            downloaded += 1
+
+    stamp("Found", exist, "files and downloaded", downloaded, "new assemblies to", gff_path)
+
+    return out_paths
+
+
+def gff_to_fasta(gff_files, fasta_path, genbank_path, verbose=True):
+    files = {}
+
+    for file in gff_files:
+
+        if verbose:
+            stamp("Converting file", file)
+
+        file_name, ext = os.path.splitext(file)
+        base_name = os.path.basename(file_name)
+
+        fasta = os.path.join(fasta_path, base_name + ".fasta")
+        genbank = os.path.join(genbank_path, base_name + ".gbk")
+
+        if not os.path.exists(fasta) or not os.path.exists(genbank):
+
+            records = _parse_gff(file, file_name)
+
+            if not os.path.exists(fasta):
+                SeqIO.write(records, fasta, format="fasta")
+            if not not os.path.exists(genbank):
+                SeqIO.write(records, genbank, format="genbank")
+
+        files[base_name] = {"gff": os.path.realpath(file),
+                            "fasta": os.path.realpath(fasta),
+                            "genbank": os.path.realpath(genbank)}
+
+    return files
+
+
+def _parse_gff(file, file_name):
+    records = []
+
+    with open(file, "r") as infile:
+
+        for i, rec in enumerate(GFF.parse(infile)):
+
+            # Enumerates the contigs (can be chromosome, plasmid and unidentified)
+            # based on total number of contigs (not type)
+            rec_id = rec.id + "_" + str(i + 1)
+
+            if len(rec_id) > 15:
+                rec_id = "contig_" + "_" + str(i + 1)
+
+            seq_record = SeqRecord(Seq(str(rec.seq), IUPAC.unambiguous_dna), id=rec_id,
+                                   description=os.path.basename(file_name),
+                                   features=rec.features)
+
+            records.append(seq_record)
+
+    return records
+
+
+def get_links(bacteria, species_indices, assembly):
+    links = bacteria.links.ix[species_indices, assembly + "_gff"].dropna()
+
+    file_names = get_file_names(bacteria.dataframe.ix[links.index])
+
+    files = pandas.concat([file_names, links], axis=1)
+    files.columns = ["File", "Link"]
+
+    return files
+
+
+def get_file_names(link_entries):
+    species_names = link_entries["Species"].str.replace(" ", "_")
+    strain_names = species_names.str.cat([link_entries["Strain"]], sep="_")
+
+    return strain_names.str.cat([".gff" for _ in range(len(link_entries))])
