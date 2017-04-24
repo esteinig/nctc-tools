@@ -385,7 +385,7 @@ class NCTC3000:
         config["minid"] = min_id
         config["mlst_mincov"] = min_cov
 
-        self.config_run_file = os.path.join(self.project_config_path, "run_" + os.path.basename(self.config_file))
+        self.config_run_file = os.path.join(self.config_path, "run_" + os.path.basename(self.config_file))
 
         with open(self.config_run_file, "w") as outfile:
             json.dump(config, outfile)

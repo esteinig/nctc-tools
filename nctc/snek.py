@@ -57,6 +57,9 @@ class Snek:
 
     def _configure_snek(self):
 
+        if not os.path.exists(self.path):
+            os.makedirs(self.path)
+
         self.snake_path = os.path.join(self.path, os.path.basename(self.snake_file))
         self.config_path = os.path.join(self.path, os.path.basename(self.config_file))
 
