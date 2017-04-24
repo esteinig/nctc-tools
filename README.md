@@ -33,7 +33,6 @@ Next update will include installation via `conda`, for now you can use `install.
 **Script**:
 
 ```
-chmod +x ./nctc-tools/install.sh
 bash ./nctc-tools/install.sh
 ```
 
@@ -45,10 +44,9 @@ Create environment with dependencies:
 conda env create -f nctc-tools/env/nctc_tools.yaml
 ```
 
+Make script executable and export to PATH.
 
-Make script executable and export to PATH, then:
-
-**Run**
+## Run
 
 Activate environment before executing tasks:
 
@@ -56,7 +54,7 @@ Activate environment before executing tasks:
 source activate nctc-tools
 ```
 
-Print help message for global options and task options:
+Print help message for global options and tasks:
 
 ```
 nctc_tools.py --help
