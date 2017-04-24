@@ -17,8 +17,6 @@ Assemblies will be able to be updated with task [`update`]()
 
 ## Setup
 
-Next update will include installation via `conda`
-
 Dependencies:
 
 * [Anaconda](https://www.continuum.io/DOWNLOADS) for Python 3
@@ -29,18 +27,28 @@ Clone this repository recursively to include latest version of [Abricate](https:
 git clone --recursive https://github.com/esteinig/nctc-tools
 ```
 
+
+Next update will include installation via `conda`, for now you can use `install.sh`:
+
+**Script**:
+
+```
+chmod +x ./nctc-tools/install.sh
+bash ./nctc-tools/install.sh
+```
+
+**Manual**:
+
 Create environment with dependencies:
 
 ```
 conda env create -f nctc-tools/env/nctc_tools.yaml
 ```
 
-Make script executable and export to PATH:
 
-```
-chmod +x ./nctc-tools/nctc_tools.py
-echo "export PATH=$PATH:$PWD/nctc-tools"
-```
+Make script executable and export to PATH, then:
+
+**Run**
 
 Activate environment before executing tasks:
 
