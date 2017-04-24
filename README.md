@@ -29,12 +29,6 @@ Clone this repository recursively to include latest version of [Abricate](https:
 git clone --recursive https://github.com/esteinig/nctc-tools
 ```
 
-**Script**:
-
-```
-bash ./nctc-tools/install.sh
-```
-
 **Manual**:
 
 Create environment with dependencies:
@@ -44,6 +38,13 @@ conda env create -f nctc-tools/env/nctc_tools.yaml
 ```
 
 Make script executable and export to PATH.
+
+
+**Script**:
+
+```
+bash ./nctc-tools/install.sh
+```
 
 ## Run
 
