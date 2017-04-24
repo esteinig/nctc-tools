@@ -17,18 +17,17 @@ Assemblies will be able to be updated with task [`update`]()
 
 ## Setup
 
-Dependencies:
+Conda:
 
-* [Anaconda](https://www.continuum.io/DOWNLOADS) for Python 3
+```
+pip install conda
+```
 
 Clone this repository recursively to include latest version of [Abricate](https://github.com/tseemann/abricate):
 
 ```
 git clone --recursive https://github.com/esteinig/nctc-tools
 ```
-
-
-Next update will include installation via `conda`, for now you can use `install.sh`:
 
 **Script**:
 
@@ -69,20 +68,16 @@ nctc_tools.py collect --help
 ```
 source activate nctc
 
-# make project at --path
 nctc_tools.py --path ./ref_db --species "Escherichia coli" make --chromosomes
 
-# specify full path via --path or cd into project
 cd ./ref_db
 
-# run tasks within --path
 nctc_tools.py --species "Escherichia coli" type -v vfdb -r resfinder
 nctc_tools.py --species "Escherichia coli" collect --cnv --csv -o ../reports
 
 # snakemake at nctc_tools/pipes
 nctc_tools.py --species "Escherichia coli" type --cluster
 
-# return to parent dir
 cd ..
 
 # fasta files at path, not project
