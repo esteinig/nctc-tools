@@ -35,14 +35,7 @@ Create environment with dependencies:
 conda env create -f nctc-tools/env/nctc_tools.yaml
 ```
 
-Make script executable and export to PATH.
-
-
-**Script**:
-
-```
-bash ./nctc-tools/install.sh
-```
+Make `nctc_tools.py` executable and export to PATH.
 
 ## Run
 
