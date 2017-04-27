@@ -88,4 +88,6 @@ source deactivate
 
 ## Contact
 
+Many thanks to the folks at Sanger Institute, Public Health England and the NCTC for making this resource available. Please see contact details at [NCTC3000](http://www.sanger.ac.uk/resources/downloads/bacteria/nctc/).
+
 eikejoachim.steinig@my.jcu.edu.au
