@@ -5,6 +5,8 @@ Pipeline facilitating access to complete bacterial reference assemblies from pub
 * type local assemblies or species with [mlst](https://github.com/tseemann/mlst) and [Abricate](https://github.com/tseemann/abricate)
 * collect analysis summaries for local assemblies or species from NCTC3000
 
+Cluster execution not available in initial push; will be implemented with Snakemake.
+
 ## Data Usage
 
 Please refer to data usage guidelines from [NCTC3000](http://www.sanger.ac.uk/resources/downloads/bacteria/nctc/):
@@ -58,20 +60,15 @@ nctc_tools.py collect --help
 ```
 source activate nctc
 
-nctc_tools.py --path ./ref_db --species "Escherichia coli" make --chromosomes
+nctc_tools.py -p ./ref_db --species "Escherichia coli" make --chromosomes
 
 cd ./ref_db
 
 nctc_tools.py --species "Escherichia coli" type -v vfdb -r resfinder
-nctc_tools.py --species "Escherichia coli" collect --cnv --csv -o ../reports
+nctc_tools.py --species "Escherichia coli" collect --cnv --csv -o ~/nctc/reports
 
-# snakemake at nctc_tools/pipes
-nctc_tools.py --species "Escherichia coli" type --cluster
-
-cd ..
-
-# fasta files at path, not project
-nctc_tools.py --path ./mrsa type --minid 90 
+# fasta files at path
+nctc_tools.py -p ./mrsa type --minid 90 
 
 source deactivate
 ```
