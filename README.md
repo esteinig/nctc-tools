@@ -15,6 +15,17 @@ Please refer to data usage guidelines from [NCTC3000](http://www.sanger.ac.uk/re
 
 >**Please note**: these are pre-submission assemblies that should not be treated as final versions. Assemblies contain both chromosomal and plasmid contigs.
 
+## Version
+
+This version is a prototype that will be extended over the next few months; we will add the following to the pipeline in the next update:
+
+* proper messages
+* cluster execution in Snakemake
+* quality control task for summarizing assembly statistics
+* update task for obtaining summaries for changes at NCTC3000
+* additional collect task options
+* install via BioConda
+
 ## Setup
 
 Conda:
