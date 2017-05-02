@@ -22,7 +22,7 @@ This version is a prototype that will be extended over the next few months; we w
 * proper messages
 * cluster execution in Snakemake
 * quality control task for summarizing assembly statistics
-* update task for obtaining summaries for changes at NCTC3000
+* update task for summarizing changes at NCTC3000
 * additional collect task options
 * install via BioConda
 
