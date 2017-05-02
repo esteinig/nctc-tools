@@ -98,4 +98,9 @@ source deactivate
 
 Many thanks to the folks at Sanger Institute, Public Health England and the NCTC for making this resource available. Please see contact details at [NCTC3000](http://www.sanger.ac.uk/resources/downloads/bacteria/nctc/).
 
+Please also check out these cool tools (and others like Prokka) by Torsten Seemann:
+
+* [mlst](https://github.com/tseemann/mlst)
+* [Abricate](https://github.com/tseemann/abricate)
+
 eikejoachim.steinig@my.jcu.edu.au
