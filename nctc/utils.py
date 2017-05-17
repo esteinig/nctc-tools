@@ -562,9 +562,9 @@ def download_assemblies(gff_path, links, force=False):
                 stamp("Interrupted by user, deleting last file at", out_path)
                 if ospath.exist(out_path):
                     os.remove(out_path)
-
-            out_paths.append(out_path)
             downloaded += 1
+            
+        out_paths.append(out_path)
 
     stamp("Found", exist, "files and downloaded", downloaded, "new assemblies to", gff_path)
 
