@@ -7,6 +7,18 @@ NCTC Utils:
 
 """
 
+import bs4
+import json
+import urllib
+
+from numpy import nan
+
+from BCBio import GFF
+from Bio import SeqIO
+from Bio.Seq import Seq
+from Bio.Alphabet import IUPAC
+from Bio.SeqRecord import SeqRecord
+
 import os
 import time
 import pandas
